@@ -30,7 +30,8 @@ export const onRequestPost: PagesFunction = async ({ request }) => {
 
     // The API key provided in the original prompt
     const apiKey = 'TeqhIndexNowKey2026';
-    const keyLocation = `https://www.teqh.com/${apiKey}.txt`; // Assuming key is hosted at root
+    // The keyLocation MUST be on the same host as the URL being submitted.
+    const keyLocation = `https://${host}/${apiKey}.txt`;
 
     const payload: IndexNowPayload = {
       host: host,

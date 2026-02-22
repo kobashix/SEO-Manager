@@ -4,6 +4,11 @@ export interface BaseWebsite {
   name: string;
   status: 'active' | 'inactive' | 'error';
   created_at: string;
+  twitter_url?: string;
+  facebook_url?: string;
+  linkedin_url?: string;
+  instagram_url?: string;
+  youtube_url?: string;
 }
 
 export interface SeoStatus {

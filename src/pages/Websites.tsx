@@ -1,6 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, Edit, Eye, Zap } from 'lucide-react';
+import { Plus, Trash2, Edit, Eye, Zap, Twitter, Facebook, Linkedin, Instagram, Youtube } from 'lucide-react';
 import type { BaseWebsite } from '../types';
+
+// --- Social Links Display Component ---
+const SocialLinks = ({ website }: { website: BaseWebsite }) => {
+    const socials = [
+        { key: 'twitter_url', Icon: Twitter, color: '#1DA1F2' },
+        { key: 'facebook_url', Icon: Facebook, color: '#1877F2' },
+        { key: 'linkedin_url', Icon: Linkedin, color: '#0A66C2' },
+        { key: 'instagram_url', Icon: Instagram, color: '#E4405F' },
+        { key: 'youtube_url', Icon: Youtube, color: '#FF0000' },
+    ];
+
+    return (
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            {socials.map(({ key, Icon, color }) => {
+                const url = website[key as keyof BaseWebsite];
+                if (url) {
+                    return <a href={url as string} key={key} target="_blank" rel="noopener noreferrer" title={url as string}><Icon size={16} color={color} /></a>;
+                }
+                return null;
+            })}
+        </div>
+    );
+};
+
 
 // --- Reusable Modal Component ---
 const WebsiteFormModal = ({ website, onClose, onSave }: { website: Partial<BaseWebsite> | null, onClose: () => void, onSave: (w: Partial<BaseWebsite>) => void }) => {
@@ -29,7 +53,7 @@ const WebsiteFormModal = ({ website, onClose, onSave }: { website: Partial<BaseW
         <div style={styles.modalBackdrop}>
             <div style={styles.modalContent}>
                 <h2>{website.id ? 'Edit' : 'Add'} Base Website</h2>
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} style={{maxHeight: '70vh', overflowY: 'auto', paddingRight: '1rem'}}>
                     <div style={styles.formGroup}>
                         <label htmlFor="name">Name</label>
                         <input id="name" name="name" value={formData.name || ''} onChange={handleChange} style={styles.input} placeholder="e.g., My Awesome Blog" />
@@ -37,6 +61,28 @@ const WebsiteFormModal = ({ website, onClose, onSave }: { website: Partial<BaseW
                     <div style={styles.formGroup}>
                         <label htmlFor="url">URL</label>
                         <input id="url" name="url" value={formData.url || ''} onChange={handleChange} style={styles.input} placeholder="https://example.com" required />
+                    </div>
+                    <hr style={{borderColor: 'var(--border-color)', margin: '1.5rem 0'}}/>
+                    <h3 style={{fontSize: '1rem', marginBottom: '1rem'}}>Social Media Links (Optional)</h3>
+                     <div style={styles.formGroup}>
+                        <label htmlFor="twitter_url">Twitter URL</label>
+                        <input id="twitter_url" name="twitter_url" value={formData.twitter_url || ''} onChange={handleChange} style={styles.input} />
+                    </div>
+                    <div style={styles.formGroup}>
+                        <label htmlFor="facebook_url">Facebook URL</label>
+                        <input id="facebook_url" name="facebook_url" value={formData.facebook_url || ''} onChange={handleChange} style={styles.input} />
+                    </div>
+                    <div style={styles.formGroup}>
+                        <label htmlFor="linkedin_url">LinkedIn URL</label>
+                        <input id="linkedin_url" name="linkedin_url" value={formData.linkedin_url || ''} onChange={handleChange} style={styles.input} />
+                    </div>
+                    <div style={styles.formGroup}>
+                        <label htmlFor="instagram_url">Instagram URL</label>
+                        <input id="instagram_url" name="instagram_url" value={formData.instagram_url || ''} onChange={handleChange} style={styles.input} />
+                    </div>
+                    <div style={styles.formGroup}>
+                        <label htmlFor="youtube_url">YouTube URL</label>
+                        <input id="youtube_url" name="youtube_url" value={formData.youtube_url || ''} onChange={handleChange} style={styles.input} />
                     </div>
                     <div style={styles.modalActions}>
                         <button type="button" onClick={onClose} className="btn btn-outline">Cancel</button>
@@ -192,6 +238,7 @@ export const Websites: React.FC = () => {
                         <thead>
                             <tr>
                                 <th>Website</th>
+                                <th>Social Links</th>
                                 <th>Status</th>
                                 <th>Created</th>
                                 <th style={{width: '250px'}}>Actions</th>
@@ -203,6 +250,9 @@ export const Websites: React.FC = () => {
                                     <td>
                                         <div style={{ fontWeight: 600 }}>{website.name}</div>
                                         <div style={{ fontSize: '0.75rem' }}><a href={website.url} target="_blank" rel="noopener noreferrer" style={{color: 'var(--text-secondary)'}}>{website.url}</a></div>
+                                    </td>
+                                    <td>
+                                        <SocialLinks website={website} />
                                     </td>
                                     <td>
                                         <span className={`status-badge status-${website.status}`}>{website.status.toUpperCase()}</span>

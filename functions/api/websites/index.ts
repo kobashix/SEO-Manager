@@ -26,7 +26,9 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
  */
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   try {
-    const { url, name } = await request.json<{ url: string, name?: string }>();
+    const { 
+      url, name, twitter_url, facebook_url, linkedin_url, instagram_url, youtube_url 
+    } = await request.json<any>();
 
     if (!url) {
       return new Response('URL is required.', { status: 400 });
@@ -36,9 +38,10 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     const siteName = name || new URL(url).hostname;
     
     await env.DB.prepare(
-      "INSERT INTO base_websites (id, url, name) VALUES (?, ?, ?)"
+      `INSERT INTO base_websites (id, url, name, twitter_url, facebook_url, linkedin_url, instagram_url, youtube_url) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
     )
-    .bind(id, url, siteName)
+    .bind(id, url, siteName, twitter_url, facebook_url, linkedin_url, instagram_url, youtube_url)
     .run();
     
     const { results } = await env.DB.prepare("SELECT * FROM base_websites WHERE id = ?").bind(id).all();

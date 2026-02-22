@@ -24,15 +24,26 @@ export const onRequestGet: PagesFunction<Env, 'id'> = async ({ env, params }) =>
  */
 export const onRequestPut: PagesFunction<Env, 'id'> = async ({ request, env, params }) => {
   try {
-    const { url, name, status } = await request.json<{ url?: string, name?: string, status?: string }>();
-    if (!url && !name && !status) {
-      return new Response('Nothing to update.', { status: 400 });
+    const { 
+      url, name, status, twitter_url, facebook_url, linkedin_url, instagram_url, youtube_url 
+    } = await request.json<any>();
+
+    // We build the query dynamically to only update fields that are present in the request
+    // This is safer than COALESCE if a user wants to set a field to null or an empty string
+    const updates = { url, name, status, twitter_url, facebook_url, linkedin_url, instagram_url, youtube_url };
+    const fieldsToUpdate = Object.entries(updates).filter(([key, value]) => value !== undefined);
+
+    if (fieldsToUpdate.length === 0) {
+        return new Response('Nothing to update.', { status: 400 });
     }
-    await env.DB.prepare(
-      "UPDATE base_websites SET url = COALESCE(?, url), name = COALESCE(?, name), status = COALESCE(?, status) WHERE id = ?"
-    )
-    .bind(url, name, status, params.id)
-    .run();
+
+    const setClauses = fieldsToUpdate.map(([key]) => `${key} = ?`).join(', ');
+    const bindings = fieldsToUpdate.map(([, value]) => value);
+    bindings.push(params.id); // Add the id for the WHERE clause
+
+    const stmt = `UPDATE base_websites SET ${setClauses} WHERE id = ?`;
+    
+    await env.DB.prepare(stmt).bind(...bindings).run();
 
     const { results } = await env.DB.prepare("SELECT * FROM base_websites WHERE id = ?").bind(params.id).all();
     return new Response(JSON.stringify(results[0]), { status: 200, headers: { 'Content-Type': 'application/json' } });

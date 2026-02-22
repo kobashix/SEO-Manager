@@ -83,7 +83,7 @@ export const Websites: React.FC = () => {
     const [selected, setSelected] = useState(new Set<string>());
     const { addNotification } = useNotification();
 
-    const API_URL_BASE = '/api/websites';
+    const API_URL_BASE = '/api/v2/websites';
 
     useEffect(() => {
         fetchWebsites();

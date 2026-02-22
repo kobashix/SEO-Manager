@@ -1,4 +1,5 @@
-// functions/api/websites/[id].ts
+// functions/api/v2/websites/[id].ts
+import type { BaseWebsite } from '../../../../src/types';
 
 interface Env {
   DB: D1Database;
@@ -24,14 +25,9 @@ export const onRequestGet: PagesFunction<Env, 'id'> = async ({ env, params }) =>
  */
 export const onRequestPut: PagesFunction<Env, 'id'> = async ({ request, env, params }) => {
   try {
-    const { 
-      url, name, status, twitter_url, facebook_url, linkedin_url, instagram_url, youtube_url 
-    } = await request.json<any>();
-
-    // We build the query dynamically to only update fields that are present in the request
-    // This is safer than COALESCE if a user wants to set a field to null or an empty string
-    const updates = { url, name, status, twitter_url, facebook_url, linkedin_url, instagram_url, youtube_url };
-    const fieldsToUpdate = Object.entries(updates).filter(([key, value]) => value !== undefined);
+    const body = await request.json<Partial<BaseWebsite>>();
+    
+    const fieldsToUpdate = Object.entries(body).filter(([key, value]) => value !== undefined && key !== 'id' && key !== 'created_at');
 
     if (fieldsToUpdate.length === 0) {
         return new Response('Nothing to update.', { status: 400 });
@@ -39,7 +35,7 @@ export const onRequestPut: PagesFunction<Env, 'id'> = async ({ request, env, par
 
     const setClauses = fieldsToUpdate.map(([key]) => `${key} = ?`).join(', ');
     const bindings = fieldsToUpdate.map(([, value]) => value);
-    bindings.push(params.id); // Add the id for the WHERE clause
+    bindings.push(params.id);
 
     const stmt = `UPDATE base_websites SET ${setClauses} WHERE id = ?`;
     

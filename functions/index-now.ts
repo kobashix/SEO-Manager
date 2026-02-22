@@ -2,7 +2,7 @@
 
 // Define the structure of the request body we expect from the frontend
 interface IndexNowRequestBody {
-  url: string;
+  urlList: string[];
 }
 
 // Define the structure of the payload for the IndexNow API
@@ -19,25 +19,24 @@ interface IndexNowPayload {
 export const onRequestPost: PagesFunction = async ({ request }) => {
   try {
     const body: IndexNowRequestBody = await request.json();
-    const urlToSubmit = body.url;
+    const { urlList } = body;
 
-    if (!urlToSubmit) {
-      return new Response('URL to submit is required.', { status: 400 });
+    if (!urlList || !Array.isArray(urlList) || urlList.length === 0) {
+      return new Response('urlList array is required.', { status: 400 });
     }
 
-    const urlObject = new URL(urlToSubmit);
-    const host = urlObject.hostname;
+    // IndexNow uses one host from the list to verify the key. We'll use the first one.
+    const primaryUrl = new URL(urlList[0]);
+    const host = primaryUrl.hostname;
 
-    // The API key provided in the original prompt
     const apiKey = 'TeqhIndexNowKey2026';
-    // The keyLocation MUST be on the same host as the URL being submitted.
     const keyLocation = `https://${host}/${apiKey}.txt`;
 
     const payload: IndexNowPayload = {
       host: host,
       key: apiKey,
       keyLocation: keyLocation,
-      urlList: [urlToSubmit],
+      urlList: urlList,
     };
 
     const indexNowResponse = await fetch('https://api.indexnow.org/indexnow', {
@@ -57,7 +56,7 @@ export const onRequestPost: PagesFunction = async ({ request }) => {
     }
     
     // Success
-    return new Response(JSON.stringify({ message: `Successfully submitted ${urlToSubmit} to IndexNow.` }), {
+    return new Response(JSON.stringify({ message: `Successfully submitted ${urlList.length} URLs to IndexNow.` }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });

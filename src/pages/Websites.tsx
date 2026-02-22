@@ -102,6 +102,8 @@ export const Websites: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [editingWebsite, setEditingWebsite] = useState<Partial<BaseWebsite> | null>(null);
     const [actionStatus, setActionStatus] = useState<{ [websiteId: string]: { type?: 'check' | 'push'; status: 'loading' | 'error' | 'success'; message?: string; } }>({});
+    const [selected, setSelected] = useState(new Set<string>());
+    const [batchPushStatus, setBatchPushStatus] = useState<{ status: 'idle' | 'loading' | 'success' | 'error', message?: string }>({ status: 'idle' });
 
     const API_URL_BASE = '/api/websites';
 
@@ -184,43 +186,70 @@ export const Websites: React.FC = () => {
             setActionFeedback(website.id, 'check', 'error', err.message);
         }
     };
+    
+    const handleBatchIndexNowPush = async () => {
+        const selectedUrls = websites.filter(w => selected.has(w.id)).map(w => w.url);
+        if (selectedUrls.length === 0) {
+            alert("Please select at least one website to push.");
+            return;
+        }
 
-    const handleIndexNowPush = async (website: BaseWebsite) => {
-        setActionFeedback(website.id, 'push', 'loading');
+        setBatchPushStatus({ status: 'loading', message: `Submitting ${selectedUrls.length} URLs...` });
         try {
             const response = await fetch('/index-now', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url: website.url }),
+                body: JSON.stringify({ urlList: selectedUrls }),
             });
             if (!response.ok) {
                 const errorText = await response.text();
-                throw new Error(errorText || 'Push failed');
+                throw new Error(errorText || 'Batch push failed');
             }
             const result = await response.json();
-            setActionFeedback(website.id, 'push', 'success', result.message || 'Submitted!');
+            setBatchPushStatus({ status: 'success', message: result.message || 'Batch submission successful!' });
+            setSelected(new Set()); // Clear selection on success
         } catch (err: any) {
-            setActionFeedback(website.id, 'push', 'error', err.message);
+            setBatchPushStatus({ status: 'error', message: err.message });
+        } finally {
+            setTimeout(() => setBatchPushStatus({ status: 'idle' }), 5000);
         }
     };
 
-    const renderActionStatus = (websiteId: string) => {
-        const status = actionStatus[websiteId];
-        if (!status) return null;
-        const color = status.status === 'error' ? 'var(--error)' : 'var(--success)';
-        return <div style={{ fontSize: '0.7rem', color, marginTop: '4px' }}>{status.status === 'loading' ? 'Loading...' : status.message}</div>;
+    const handleSelect = (websiteId: string) => {
+        const newSelection = new Set(selected);
+        if (newSelection.has(websiteId)) {
+            newSelection.delete(websiteId);
+        } else {
+            newSelection.add(websiteId);
+        }
+        setSelected(newSelection);
+    };
+
+    const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.checked) {
+            setSelected(new Set(websites.map(w => w.id)));
+        } else {
+            setSelected(new Set());
+        }
     };
 
     return (
         <div>
             <WebsiteFormModal website={editingWebsite} onClose={() => setEditingWebsite(null)} onSave={handleSaveWebsite} />
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                 <h1>Base Websites</h1>
-                <button className="btn btn-primary" onClick={() => setEditingWebsite({})}>
-                    <Plus size={16} /> Add Website
-                </button>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                    <button className="btn btn-secondary" onClick={handleBatchIndexNowPush} disabled={selected.size === 0 || batchPushStatus.status === 'loading'}>
+                        <Zap size={16} /> Push {selected.size > 0 ? `${selected.size} to` : ''} IndexNow
+                    </button>
+                    <button className="btn btn-primary" onClick={() => setEditingWebsite({})}>
+                        <Plus size={16} /> Add Website
+                    </button>
+                </div>
             </div>
+            {batchPushStatus.status !== 'idle' && <div style={{marginBottom: '1rem', color: batchPushStatus.status === 'error' ? 'var(--error)' : 'var(--success)'}}>{batchPushStatus.message}</div>}
+
 
             {isLoading && <p>Loading websites...</p>}
             {error && <p style={{color: 'var(--error)'}}>Error: {error}</p>}
@@ -237,16 +266,18 @@ export const Websites: React.FC = () => {
                     <table className="data-table">
                         <thead>
                             <tr>
+                                <th style={{width: '20px'}}><input type="checkbox" onChange={handleSelectAll} checked={selected.size > 0 && selected.size === websites.length} /></th>
                                 <th>Website</th>
                                 <th>Social Links</th>
                                 <th>Status</th>
                                 <th>Created</th>
-                                <th style={{width: '250px'}}>Actions</th>
+                                <th style={{width: '200px'}}>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {websites.map(website => (
                                 <tr key={website.id}>
+                                    <td><input type="checkbox" checked={selected.has(website.id)} onChange={() => handleSelect(website.id)} /></td>
                                     <td>
                                         <div style={{ fontWeight: 600 }}>{website.name}</div>
                                         <div style={{ fontSize: '0.75rem' }}><a href={website.url} target="_blank" rel="noopener noreferrer" style={{color: 'var(--text-secondary)'}}>{website.url}</a></div>
@@ -262,10 +293,11 @@ export const Websites: React.FC = () => {
                                         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                                             <button title="Edit" className="btn btn-outline" onClick={() => setEditingWebsite(website)}><Edit size={14} /></button>
                                             <button title="Delete" className="btn btn-outline" style={{color: 'var(--error)'}} onClick={() => handleDeleteWebsite(website.id)}><Trash2 size={14} /></button>
-                                            <button title="Check Google Index" className="btn btn-outline" onClick={() => handleGoogleCheck(website)} disabled={actionStatus[website.id]?.status === 'loading'}><Eye size={14} /></button>
-                                            <button title="Push to IndexNow" className="btn btn-outline" onClick={() => handleIndexNowPush(website)} disabled={actionStatus[website.id]?.status === 'loading'}><Zap size={14} /></button>
+                                            <button title="Check Google Index" className="btn btn-outline" onClick={() => handleGoogleCheck(website)} disabled={actionStatus[website.id]?.status === 'loading'}>
+                                                {actionStatus[website.id]?.type === 'check' && actionStatus[website.id]?.status === 'loading' ? '...' : <Eye size={14} />}
+                                            </button>
                                         </div>
-                                        {renderActionStatus(website.id)}
+                                        {actionStatus[website.id] && actionStatus[website.id].type === 'check' && <div style={{ fontSize: '0.7rem', color: actionStatus[website.id]?.status === 'error' ? 'var(--error)' : 'var(--success)', marginTop: '4px' }}>{actionStatus[website.id]?.message}</div>}
                                     </td>
                                 </tr>
                             ))}

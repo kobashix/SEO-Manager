@@ -1,30 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Plus, Trash2, Edit, Eye, Zap, Twitter, Facebook, Linkedin, Instagram, Youtube } from 'lucide-react';
 import type { BaseWebsite } from '../types';
-
-// --- Social Links Display Component ---
-const SocialLinks = ({ website }: { website: BaseWebsite }) => {
-    const socials = [
-        { key: 'twitter_url', Icon: Twitter, color: '#1DA1F2' },
-        { key: 'facebook_url', Icon: Facebook, color: '#1877F2' },
-        { key: 'linkedin_url', Icon: Linkedin, color: '#0A66C2' },
-        { key: 'instagram_url', Icon: Instagram, color: '#E4405F' },
-        { key: 'youtube_url', Icon: Youtube, color: '#FF0000' },
-    ];
-
-    return (
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            {socials.map(({ key, Icon, color }) => {
-                const url = website[key as keyof BaseWebsite];
-                if (url) {
-                    return <a href={url as string} key={key} target="_blank" rel="noopener noreferrer" title={url as string}><Icon size={16} color={color} /></a>;
-                }
-                return null;
-            })}
-        </div>
-    );
-};
-
+import { useNotification } from '../contexts/NotificationContext';
 
 // --- Reusable Modal Component ---
 const WebsiteFormModal = ({ website, onClose, onSave }: { website: Partial<BaseWebsite> | null, onClose: () => void, onSave: (w: Partial<BaseWebsite>) => void }) => {
@@ -101,9 +79,9 @@ export const Websites: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [editingWebsite, setEditingWebsite] = useState<Partial<BaseWebsite> | null>(null);
-    const [actionStatus, setActionStatus] = useState<{ [websiteId: string]: { type?: 'check' | 'push'; status: 'loading' | 'error' | 'success'; message?: string; } }>({});
+    const [actionStatus, setActionStatus] = useState<{ [websiteId: string]: { status: 'loading' | 'success'; message?: string; } }>({});
     const [selected, setSelected] = useState(new Set<string>());
-    const [batchPushStatus, setBatchPushStatus] = useState<{ status: 'idle' | 'loading' | 'success' | 'error', message?: string }>({ status: 'idle' });
+    const { addNotification } = useNotification();
 
     const API_URL_BASE = '/api/websites';
 
@@ -111,9 +89,9 @@ export const Websites: React.FC = () => {
         fetchWebsites();
     }, []);
 
-    const setActionFeedback = (websiteId: string, type: 'check' | 'push', status: 'loading' | 'error' | 'success', message?: string) => {
-        setActionStatus(prev => ({ ...prev, [websiteId]: { type, status, message } }));
-        if (status === 'success' || status === 'error') {
+    const setActionMessage = (websiteId: string, status: 'loading' | 'success', message?: string) => {
+        setActionStatus(prev => ({ ...prev, [websiteId]: { status, message } }));
+        if (status === 'success') {
             setTimeout(() => {
                 setActionStatus(prev => {
                     const newState = { ...prev };
@@ -156,8 +134,9 @@ export const Websites: React.FC = () => {
             }
             await fetchWebsites();
             setEditingWebsite(null);
+            addNotification(`Website ${isUpdating ? 'updated' : 'added'} successfully!`, 'success');
         } catch (err: any) {
-            alert(`Error: ${err.message}`);
+            addNotification(err.message, 'error');
         }
     };
 
@@ -167,34 +146,34 @@ export const Websites: React.FC = () => {
             const response = await fetch(`${API_URL_BASE}/${websiteId}`, { method: 'DELETE' });
             if (!response.ok) throw new Error('Failed to delete website.');
             setWebsites(prev => prev.filter(w => w.id !== websiteId));
+            addNotification('Website deleted.', 'success');
         } catch (err: any) {
-            alert(`Error: ${err.message}`);
+            addNotification(err.message, 'error');
         }
     };
     
     const handleGoogleCheck = async (website: BaseWebsite) => {
-        setActionFeedback(website.id, 'check', 'loading');
+        setActionMessage(website.id, 'loading');
         try {
             const response = await fetch(`/api/check-indexing?domain=${website.url}`);
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(errorText || 'Check failed');
-            }
             const result = await response.json();
-            setActionFeedback(website.id, 'check', 'success', `${result.indexedCount} indexed`);
+            if (!response.ok) {
+                throw result; // Throw the structured error from the backend
+            }
+            setActionMessage(website.id, 'success', `${result.indexedCount} indexed`);
         } catch (err: any) {
-            setActionFeedback(website.id, 'check', 'error', err.message);
+            addNotification(err.message, 'error', err.fixUrl ? { href: err.fixUrl, text: 'Enable API' } : undefined);
+            setActionStatus(prev => { const newState = {...prev}; delete newState[website.id]; return newState; });
         }
     };
     
     const handleBatchIndexNowPush = async () => {
         const selectedUrls = websites.filter(w => selected.has(w.id)).map(w => w.url);
         if (selectedUrls.length === 0) {
-            alert("Please select at least one website to push.");
+            addNotification("Please select at least one website to push.", 'error');
             return;
         }
 
-        setBatchPushStatus({ status: 'loading', message: `Submitting ${selectedUrls.length} URLs...` });
         try {
             const response = await fetch('/index-now', {
                 method: 'POST',
@@ -206,12 +185,10 @@ export const Websites: React.FC = () => {
                 throw new Error(errorText || 'Batch push failed');
             }
             const result = await response.json();
-            setBatchPushStatus({ status: 'success', message: result.message || 'Batch submission successful!' });
+            addNotification(result.message || 'Batch submission successful!', 'success');
             setSelected(new Set()); // Clear selection on success
         } catch (err: any) {
-            setBatchPushStatus({ status: 'error', message: err.message });
-        } finally {
-            setTimeout(() => setBatchPushStatus({ status: 'idle' }), 5000);
+            addNotification(err.message, 'error', { href: '/settings', text: 'Check Settings' });
         }
     };
 
@@ -232,6 +209,12 @@ export const Websites: React.FC = () => {
             setSelected(new Set());
         }
     };
+    
+    const renderActionStatus = (websiteId: string) => {
+        const status = actionStatus[websiteId];
+        if (!status) return null;
+        return <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginTop: '4px' }}>{status.status === 'loading' ? 'Checking...' : status.message}</div>;
+    };
 
     return (
         <div>
@@ -240,7 +223,7 @@ export const Websites: React.FC = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                 <h1>Base Websites</h1>
                 <div style={{ display: 'flex', gap: '1rem' }}>
-                    <button className="btn btn-secondary" onClick={handleBatchIndexNowPush} disabled={selected.size === 0 || batchPushStatus.status === 'loading'}>
+                    <button className="btn btn-secondary" onClick={handleBatchIndexNowPush} disabled={selected.size === 0}>
                         <Zap size={16} /> Push {selected.size > 0 ? `${selected.size} to` : ''} IndexNow
                     </button>
                     <button className="btn btn-primary" onClick={() => setEditingWebsite({})}>
@@ -248,11 +231,9 @@ export const Websites: React.FC = () => {
                     </button>
                 </div>
             </div>
-            {batchPushStatus.status !== 'idle' && <div style={{marginBottom: '1rem', color: batchPushStatus.status === 'error' ? 'var(--error)' : 'var(--success)'}}>{batchPushStatus.message}</div>}
-
 
             {isLoading && <p>Loading websites...</p>}
-            {error && <p style={{color: 'var(--error)'}}>Error: {error}</p>}
+            {error && <p style={{color: 'var(--error)'}}>{error}</p>}
             
             {!isLoading && !error && websites.length === 0 && (
                 <div className="stat-card">
@@ -271,7 +252,8 @@ export const Websites: React.FC = () => {
                                 <th>Social Links</th>
                                 <th>Status</th>
                                 <th>Created</th>
-                                <th style={{width: '200px'}}>Actions</th>
+                                <th>Google Index</th>
+                                <th style={{width: '100px'}}>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -282,22 +264,22 @@ export const Websites: React.FC = () => {
                                         <div style={{ fontWeight: 600 }}>{website.name}</div>
                                         <div style={{ fontSize: '0.75rem' }}><a href={website.url} target="_blank" rel="noopener noreferrer" style={{color: 'var(--text-secondary)'}}>{website.url}</a></div>
                                     </td>
-                                    <td>
-                                        <SocialLinks website={website} />
-                                    </td>
-                                    <td>
-                                        <span className={`status-badge status-${website.status}`}>{website.status.toUpperCase()}</span>
-                                    </td>
+                                    <td><SocialLinks website={website} /></td>
+                                    <td><span className={`status-badge status-${website.status}`}>{website.status.toUpperCase()}</span></td>
                                     <td>{new Date(website.created_at).toLocaleDateString()}</td>
+                                    <td>
+                                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                            <button title="Check Google Index" className="btn btn-outline" onClick={() => handleGoogleCheck(website)} disabled={actionStatus[website.id]?.status === 'loading'}>
+                                                <Eye size={14} />
+                                            </button>
+                                            {renderActionStatus(website.id)}
+                                        </div>
+                                    </td>
                                     <td>
                                         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                                             <button title="Edit" className="btn btn-outline" onClick={() => setEditingWebsite(website)}><Edit size={14} /></button>
                                             <button title="Delete" className="btn btn-outline" style={{color: 'var(--error)'}} onClick={() => handleDeleteWebsite(website.id)}><Trash2 size={14} /></button>
-                                            <button title="Check Google Index" className="btn btn-outline" onClick={() => handleGoogleCheck(website)} disabled={actionStatus[website.id]?.status === 'loading'}>
-                                                {actionStatus[website.id]?.type === 'check' && actionStatus[website.id]?.status === 'loading' ? '...' : <Eye size={14} />}
-                                            </button>
                                         </div>
-                                        {actionStatus[website.id] && actionStatus[website.id].type === 'check' && <div style={{ fontSize: '0.7rem', color: actionStatus[website.id]?.status === 'error' ? 'var(--error)' : 'var(--success)', marginTop: '4px' }}>{actionStatus[website.id]?.message}</div>}
                                     </td>
                                 </tr>
                             ))}
@@ -309,6 +291,7 @@ export const Websites: React.FC = () => {
     );
 };
 
+// Basic inline styles for modal
 const styles: { [key: string]: React.CSSProperties } = {
     modalBackdrop: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 },
     modalContent: { backgroundColor: 'var(--bg-secondary)', padding: '2rem', borderRadius: '8px', width: '90%', maxWidth: '500px' },

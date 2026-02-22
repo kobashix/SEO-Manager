@@ -36,9 +36,19 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     if (!googleResponse.ok) {
       const errorData = await googleResponse.json();
       console.error('Google API Error:', errorData);
-      return new Response(JSON.stringify({
-        message: `Google API failed: ${errorData.error?.message || googleResponse.statusText}`
-      }), {
+
+      let message = `Google API failed: ${errorData.error?.message || googleResponse.statusText}`;
+      let fixUrl = null;
+
+      // Check for the specific error that includes a link to enable the API
+      if (errorData.error?.details) {
+        const accessNotConfigured = errorData.error.details.find((detail: any) => detail['@type'] === 'type.googleapis.com/google.rpc.Help');
+        if (accessNotConfigured && accessNotConfigured.links?.[0]?.url) {
+          fixUrl = accessNotConfigured.links[0].url;
+        }
+      }
+      
+      return new Response(JSON.stringify({ message, fixUrl }), {
         status: googleResponse.status,
         headers: { "Content-Type": "application/json" },
       });

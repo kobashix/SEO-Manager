@@ -5,7 +5,7 @@ interface Env {
   DB: D1Database;
 }
 
-export const onRequestPost: PagesFunction<Env> = async ({ env }) => {
+export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
   try {
     const statements = [
       `DROP TABLE IF EXISTS base_websites;`,

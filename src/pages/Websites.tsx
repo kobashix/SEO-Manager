@@ -66,7 +66,13 @@ export const Websites: React.FC = () => {
     const setActionFeedback = (websiteId: string, type: 'check' | 'push', status: 'loading' | 'error' | 'success', message?: string) => {
         setActionStatus(prev => ({ ...prev, [websiteId]: { type, status, message } }));
         if (status === 'success' || status === 'error') {
-            setTimeout(() => setActionStatus(prev => ({ ...prev, [websiteId]: undefined })), 5000);
+            setTimeout(() => {
+                setActionStatus(prev => {
+                    const newState = { ...prev };
+                    delete newState[websiteId];
+                    return newState;
+                });
+            }, 5000);
         }
     };
 

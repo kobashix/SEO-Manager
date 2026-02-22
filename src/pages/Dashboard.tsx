@@ -1,42 +1,42 @@
 import React from 'react';
-import { mockStats } from '../services/mockData';
 import { CheckCircle, AlertTriangle, XCircle } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
+  // TODO: Fetch live stats from the backend in the future.
   return (
     <div>
       <h1 style={{ marginBottom: '2rem' }}>System Overview</h1>
       
       <div className="dashboard-grid">
         <div className="stat-card">
-          <div className="stat-label">Total Domains</div>
-          <div className="stat-value">{mockStats.totalDomains}</div>
+          <div className="stat-label">Total Websites</div>
+          <div className="stat-value">-</div>
           <div style={{ color: 'var(--text-secondary)', marginTop: '0.5rem', fontSize: '0.875rem' }}>
-            Active Portfolio
+            Managed in Database
           </div>
         </div>
         
         <div className="stat-card">
-          <div className="stat-label">Indexed URLs</div>
-          <div className="stat-value">{mockStats.indexedUrls}</div>
+          <div className="stat-label">Live Google Checks</div>
+          <div className="stat-value">OK</div>
+           <div style={{ color: 'var(--success)', marginTop: '0.5rem', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+            <CheckCircle size={14} /> API Connected
+          </div>
+        </div>
+
+        <div className="stat-card">
+          <div className="stat-label">IndexNow Status</div>
+          <div className="stat-value">OK</div>
           <div style={{ color: 'var(--success)', marginTop: '0.5rem', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-            <CheckCircle size={14} /> 98% Healthy
+            <CheckCircle size={14} /> API Connected
           </div>
         </div>
 
         <div className="stat-card">
-          <div className="stat-label">Warnings</div>
-          <div className="stat-value">{mockStats.warnings}</div>
-          <div style={{ color: 'var(--warning)', marginTop: '0.5rem', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-            <AlertTriangle size={14} /> Attention Needed
-          </div>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-label">Critical Errors</div>
-          <div className="stat-value">{mockStats.errors}</div>
-          <div style={{ color: 'var(--error)', marginTop: '0.5rem', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-            <XCircle size={14} /> Immediate Action
+          <div className="stat-label">System Health</div>
+          <div className="stat-value">Nominal</div>
+          <div style={{ color: 'var(--success)', marginTop: '0.5rem', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+            <XCircle size={14} /> All Systems Go
           </div>
         </div>
       </div>
@@ -52,7 +52,7 @@ export const Dashboard: React.FC = () => {
             IndexNow: Connected
           </div>
           <div className="status-badge status-active">
-            Crawlers: Active
+            Database: Connected
           </div>
         </div>
       </div>

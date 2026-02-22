@@ -1,7 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { Dashboard } from './pages/Dashboard';
-import { Domains } from './pages/Domains';
+import { Websites } from './pages/Websites';
 import { Settings } from './pages/Settings';
 
 function App() {
@@ -9,7 +9,7 @@ function App() {
     <Routes>
       <Route path="/" element={<Layout />}>
         <Route index element={<Dashboard />} />
-        <Route path="domains" element={<Domains />} />
+        <Route path="websites" element={<Websites />} />
         <Route path="settings" element={<Settings />} />
       </Route>
     </Routes>

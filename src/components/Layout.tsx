@@ -19,11 +19,11 @@ export const Layout: React.FC = () => {
             <span>Dashboard</span>
           </NavLink>
           <NavLink
-            to="/domains"
+            to="/websites"
             className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
           >
             <Globe size={20} />
-            <span>Domains</span>
+            <span>Websites</span>
           </NavLink>
           <NavLink
             to="/settings"

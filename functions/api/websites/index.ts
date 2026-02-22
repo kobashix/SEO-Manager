@@ -25,15 +25,11 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     const id = uuidv4();
     const siteName = body.name || new URL(body.url).hostname;
     
+    // DIAGNOSTIC: Use the simplest possible insert
     await env.DB.prepare(
-      `INSERT INTO base_websites (id, url, name, twitter_url, facebook_url, linkedin_url, instagram_url, youtube_url) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO base_websites (id, url, name) VALUES (?, ?, ?)`
     )
-    .bind(
-      id, body.url, siteName, 
-      body.twitter_url ?? null, body.facebook_url ?? null, body.linkedin_url ?? null, 
-      body.instagram_url ?? null, body.youtube_url ?? null
-    )
+    .bind(id, body.url, siteName)
     .run();
     
     const { results } = await env.DB.prepare("SELECT * FROM base_websites WHERE id = ?").bind(id).all();

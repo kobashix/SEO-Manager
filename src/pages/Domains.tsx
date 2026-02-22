@@ -1,9 +1,55 @@
 import React, { useState } from 'react';
 import { mockDomains } from '../services/mockData';
-import { RefreshCw, ExternalLink, Search } from 'lucide-react';
+import { RefreshCw, Zap, Search, CheckCircle, AlertTriangle } from 'lucide-react';
+
+type PushStatus = 'idle' | 'pushing' | 'success' | 'error';
+
+interface FeedbackState {
+  [domainId: string]: {
+    status: PushStatus;
+    message: string;
+  };
+}
 
 export const Domains: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [feedback, setFeedback] = useState<FeedbackState>({});
+
+  const handleIndexNowPush = async (domainId: string, url: string) => {
+    setFeedback(prev => ({
+      ...prev,
+      [domainId]: { status: 'pushing', message: 'Submitting...' }
+    }));
+
+    try {
+      const response = await fetch('/index-now', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || `Request failed with status ${response.status}`);
+      }
+
+      setFeedback(prev => ({
+        ...prev,
+        [domainId]: { status: 'success', message: 'Successfully Submitted!' }
+      }));
+
+    } catch (error: any) {
+      setFeedback(prev => ({
+        ...prev,
+        [domainId]: { status: 'error', message: error.message || 'An error occurred.' }
+      }));
+    } finally {
+        setTimeout(() => {
+            setFeedback(prev => ({ ...prev, [domainId]: { status: 'idle', message: '' } }));
+        }, 5000); // Reset feedback after 5 seconds
+    }
+  };
 
   const filteredDomains = mockDomains.filter(domain => 
     domain.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -107,9 +153,21 @@ export const Domains: React.FC = () => {
                   </div>
                 </td>
                 <td>
-                  <button className="btn btn-outline" style={{ padding: '0.25rem 0.5rem' }}>
-                    <ExternalLink size={14} /> Check
+                  <button 
+                    className="btn btn-outline" 
+                    style={{ padding: '0.25rem 0.5rem' }}
+                    onClick={() => handleIndexNowPush(domain.id, domain.url)}
+                    disabled={feedback[domain.id]?.status === 'pushing'}
+                  >
+                    <Zap size={14} /> Push
                   </button>
+                  {feedback[domain.id] && feedback[domain.id].status !== 'idle' && (
+                    <div style={{ fontSize: '0.7rem', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      {feedback[domain.id].status === 'success' && <CheckCircle size={12} color="var(--success)" />}
+                      {feedback[domain.id].status === 'error' && <AlertTriangle size={12} color="var(--error)" />}
+                      {feedback[domain.id].message}
+                    </div>
+                  )}
                 </td>
               </tr>
             ))}

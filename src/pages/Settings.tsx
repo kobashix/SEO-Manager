@@ -77,6 +77,12 @@ export const Settings: React.FC = () => {
                 onChange={handleInputChange}
                 style={{ width: '100%', padding: '0.75rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}
               />
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginTop: '0.5rem' }}>
+                Required to check indexing status on Google. 
+                <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-primary)', marginLeft: '4px' }}>
+                  Get your API Key here.
+                </a>
+              </p>
             </div>
             <div>
               <label htmlFor="googleCxId" style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>
@@ -91,6 +97,13 @@ export const Settings: React.FC = () => {
                 onChange={handleInputChange}
                 style={{ width: '100%', padding: '0.75rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}
               />
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginTop: '0.5rem' }}>
+                This tells Google which search engine to use. 
+                <a href="https://programmablesearchengine.google.com/controlpanel/all" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-primary)', marginLeft: '4px' }}>
+                  Create a Search Engine here.
+                </a>
+                <span style={{ display: 'block', marginTop: '4px' }}>Important: In the setup, ensure "Search the entire web" is enabled.</span>
+              </p>
             </div>
           </div>
 

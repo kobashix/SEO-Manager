@@ -41,7 +41,16 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       `INSERT INTO base_websites (id, url, name, twitter_url, facebook_url, linkedin_url, instagram_url, youtube_url) 
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
     )
-    .bind(id, url, siteName, twitter_url, facebook_url, linkedin_url, instagram_url, youtube_url)
+    .bind(
+      id, 
+      url, 
+      siteName, 
+      twitter_url || null, 
+      facebook_url || null, 
+      linkedin_url || null, 
+      instagram_url || null, 
+      youtube_url || null
+    )
     .run();
     
     const { results } = await env.DB.prepare("SELECT * FROM base_websites WHERE id = ?").bind(id).all();

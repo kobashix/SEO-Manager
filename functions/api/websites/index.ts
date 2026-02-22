@@ -26,16 +26,14 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
  */
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   try {
-    const { 
-      url, name, twitter_url, facebook_url, linkedin_url, instagram_url, youtube_url 
-    } = await request.json<any>();
+    const body = await request.json<any>();
 
-    if (!url) {
+    if (!body.url) {
       return new Response('URL is required.', { status: 400 });
     }
 
     const id = uuidv4();
-    const siteName = name || new URL(url).hostname;
+    const siteName = body.name || new URL(body.url).hostname;
     
     await env.DB.prepare(
       `INSERT INTO base_websites (id, url, name, twitter_url, facebook_url, linkedin_url, instagram_url, youtube_url) 
@@ -43,13 +41,13 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     )
     .bind(
       id, 
-      url, 
+      body.url, 
       siteName, 
-      twitter_url || null, 
-      facebook_url || null, 
-      linkedin_url || null, 
-      instagram_url || null, 
-      youtube_url || null
+      body.twitter_url ?? null, 
+      body.facebook_url ?? null, 
+      body.linkedin_url ?? null, 
+      body.instagram_url ?? null, 
+      body.youtube_url ?? null
     )
     .run();
     

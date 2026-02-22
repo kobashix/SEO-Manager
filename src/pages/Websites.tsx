@@ -128,8 +128,11 @@ export const Websites: React.FC = () => {
         setActionFeedback(website.id, 'check', 'loading');
         try {
             const response = await fetch(`/api/check-indexing?domain=${website.url}`);
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || 'Check failed');
+            }
             const result = await response.json();
-            if (!response.ok) throw new Error(result.message || 'Check failed');
             setActionFeedback(website.id, 'check', 'success', `${result.indexedCount} indexed`);
         } catch (err: any) {
             setActionFeedback(website.id, 'check', 'error', err.message);
@@ -144,9 +147,12 @@ export const Websites: React.FC = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ url: website.url }),
             });
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || 'Push failed');
+            }
             const result = await response.json();
-            if (!response.ok) throw new Error(result.message || 'Push failed');
-            setActionFeedback(website.id, 'push', 'success', 'Submitted!');
+            setActionFeedback(website.id, 'push', 'success', result.message || 'Submitted!');
         } catch (err: any) {
             setActionFeedback(website.id, 'push', 'error', err.message);
         }

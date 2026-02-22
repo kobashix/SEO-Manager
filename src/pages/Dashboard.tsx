@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle, AlertTriangle, XCircle } from 'lucide-react';
+import { CheckCircle, XCircle } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
   // TODO: Fetch live stats from the backend in the future.

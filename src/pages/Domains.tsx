@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { mockDomains } from '../services/mockData';
-import { RefreshCw, Zap, Search, CheckCircle, AlertTriangle } from 'lucide-react';
+import { RefreshCw, Zap, Search, CheckCircle, AlertTriangle, ExternalLink } from 'lucide-react';
 
 type PushStatus = 'idle' | 'pushing' | 'success' | 'error';
 
@@ -49,6 +49,12 @@ export const Domains: React.FC = () => {
             setFeedback(prev => ({ ...prev, [domainId]: { status: 'idle', message: '' } }));
         }, 5000); // Reset feedback after 5 seconds
     }
+  };
+
+  const handleManualCheck = (url: string) => {
+    window.open(`https://www.google.com/search?q=site:${url}`, '_blank');
+    window.open(`https://www.bing.com/search?q=site:${url}`, '_blank');
+    window.open(`https://yandex.com/search/?text=site:${url}`, '_blank');
   };
 
   const filteredDomains = mockDomains.filter(domain => 
@@ -108,36 +114,9 @@ export const Domains: React.FC = () => {
                     {domain.status.toUpperCase()}
                   </span>
                 </td>
-                <td>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                    <span style={{ color: domain.engines.google.indexed ? 'var(--success)' : 'var(--error)' }}>
-                      {domain.engines.google.indexed ? 'Indexed' : 'Not Indexed'}
-                    </span>
-                    <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
-                      Rank: {domain.engines.google.rank || '-'}
-                    </span>
-                  </div>
-                </td>
-                <td>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                    <span style={{ color: domain.engines.bing.indexed ? 'var(--success)' : 'var(--error)' }}>
-                      {domain.engines.bing.indexed ? 'Indexed' : 'Not Indexed'}
-                    </span>
-                    <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
-                      Rank: {domain.engines.bing.rank || '-'}
-                    </span>
-                  </div>
-                </td>
-                <td>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                    <span style={{ color: domain.engines.yandex.indexed ? 'var(--success)' : 'var(--error)' }}>
-                      {domain.engines.yandex.indexed ? 'Indexed' : 'Not Indexed'}
-                    </span>
-                    <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
-                      Rank: {domain.engines.yandex.rank || '-'}
-                    </span>
-                  </div>
-                </td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
                 <td>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <span style={{ 
@@ -148,11 +127,18 @@ export const Domains: React.FC = () => {
                     }}></span>
                     {domain.indexNow.status === 'success' ? 'Synced' : 'Pending'}
                   </div>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
                     {new Date(domain.indexNow.lastPush).toLocaleDateString()}
                   </div>
                 </td>
-                <td>
+                <td style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <button
+                    className="btn btn-outline"
+                    style={{ padding: '0.25rem 0.5rem' }}
+                    onClick={() => handleManualCheck(domain.url)}
+                  >
+                    <ExternalLink size={14} /> Check
+                  </button>
                   <button 
                     className="btn btn-outline" 
                     style={{ padding: '0.25rem 0.5rem' }}

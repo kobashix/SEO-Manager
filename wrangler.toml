@@ -1,0 +1,14 @@
+name = "seo-manager"
+compatibility_date = "2024-02-22"
+
+# This is the directory of static assets to be served
+pages_build_output_dir = "dist"
+
+[[kv_namespaces]]
+binding = "SETTINGS_KV"
+id = "4b3df82583044fb1bd06f26b54442403"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "seo_manager_db"
+database_id = "0cbeab0d-3ae7-4b1b-b734-7b7c87282e63"

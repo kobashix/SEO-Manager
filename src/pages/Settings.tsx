@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AppSettings } from '../../../functions/api/settings';
+import type { AppSettings } from '../types';
 
 type Status = 'idle' | 'loading' | 'success' | 'error';
 
@@ -49,7 +49,7 @@ export const Settings: React.FC = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setSettings(prev => ({ ...prev, [name]: value }));
+    setSettings((prev: AppSettings) => ({ ...prev, [name]: value }));
   };
 
   return (

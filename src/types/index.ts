@@ -31,3 +31,8 @@ export interface Stats {
   warnings: number;
   errors: number;
 }
+
+export interface AppSettings {
+  googleApiKey?: string;
+  googleCxId?: string;
+}

@@ -1,14 +1,9 @@
 // functions/api/settings.ts
 
+import type { AppSettings } from '../../src/types';
+
 interface Env {
   SETTINGS_KV: KVNamespace;
-}
-
-// The shape of our settings object
-export interface AppSettings {
-  googleApiKey?: string;
-  googleCxId?: string;
-  // Add other keys like Bing, Yandex here in the future
 }
 
 const SETTINGS_KEY = "APP_SETTINGS";

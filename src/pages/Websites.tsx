@@ -69,9 +69,9 @@ export const Websites: React.FC = () => {
     const handleEnrich = async (website: BaseWebsite) => {
         try {
             const response = await fetch(`${API_URL_BASE}/${website.id}`, {
-                method: 'PUT',
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'enrich' }),
+                body: JSON.stringify({ id: website.id, url: website.url }),
             });
             if (!response.ok) throw new Error(await response.text());
             const updatedWebsite = await response.json();
@@ -154,3 +154,4 @@ const styles: { [key: string]: React.CSSProperties } = {
     closeButton: { position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', color: 'white', fontSize: '1.5rem', cursor: 'pointer' },
     // ... other styles
 };
+

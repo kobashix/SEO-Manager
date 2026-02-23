@@ -44,3 +44,14 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     return new Response(`Failed to create website: ${error.message}`, { status: 500 });
   }
 };
+
+export const onRequestDelete: PagesFunction<Env> = async ({ request, env }) => {
+  try {
+    const { id } = await request.json<{ id: string }>();
+    if (!id) return new Response('ID is required.', { status: 400 });
+    await env.DB.prepare("DELETE FROM base_websites WHERE id = ?").bind(id).run();
+    return new Response(null, { status: 204 });
+  } catch (error: any) {
+    return new Response(Failed to delete website: , { status: 500 });
+  }
+};

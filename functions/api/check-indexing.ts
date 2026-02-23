@@ -19,7 +19,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       return new Response('Domain parameter is required.', { status: 400 });
     }
 
-    const settingsJson = await env.SETTINGS_KV.get(SETTINGS_KEY);
+    const settingsJson = await env.KV.get(SETTINGS_KEY);
     const settings: AppSettings = settingsJson ? JSON.parse(settingsJson) : {};
 
     const googleApiKey = settings.googleApiKey;

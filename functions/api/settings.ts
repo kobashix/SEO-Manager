@@ -13,7 +13,7 @@ const SETTINGS_KEY = "APP_SETTINGS";
  */
 export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
   try {
-    const settingsJson = await env.SETTINGS_KV.get(SETTINGS_KEY);
+    const settingsJson = await env.KV.get(SETTINGS_KEY);
     const settings: AppSettings = settingsJson ? JSON.parse(settingsJson) : {};
     
     return new Response(JSON.stringify(settings), {
@@ -38,7 +38,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       return new Response("Invalid settings payload.", { status: 400 });
     }
 
-    await env.SETTINGS_KV.put(SETTINGS_KEY, JSON.stringify(newSettings));
+    await env.KV.put(SETTINGS_KEY, JSON.stringify(newSettings));
     
     return new Response(JSON.stringify({ message: "Settings saved successfully." }), {
       status: 200,

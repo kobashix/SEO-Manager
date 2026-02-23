@@ -18,14 +18,36 @@ export const onRequestGet: PagesFunction<Env, 'id'> = async ({ env, params }) =>
 export const onRequestPut: PagesFunction<Env, 'id'> = async ({ request, env, params }) => {
   try {
     const body = await request.json<Partial<BaseWebsite>>();
-    const fieldsToUpdate = Object.entries(body).filter(([key, value]) => value !== undefined && key !== 'id' && key !== 'created_at');
-    if (fieldsToUpdate.length === 0) return new Response('Nothing to update.', { status: 400 });
+    
+    // Explicitly list all possible fields to prevent unwanted updates
+    const updates: Partial<BaseWebsite> = {
+        url: body.url,
+        name: body.name,
+        status: body.status,
+        twitter_url: body.twitter_url,
+        facebook_url: body.facebook_url,
+        linkedin_url: body.linkedin_url,
+        instagram_url: body.instagram_url,
+        youtube_url: body.youtube_url,
+        gsc_url: body.gsc_url,
+        bing_url: body.bing_url,
+        yandex_url: body.yandex_url,
+    };
+
+    const fieldsToUpdate = Object.entries(updates).filter(([key, value]) => value !== undefined);
+
+    if (fieldsToUpdate.length === 0) {
+        return new Response('Nothing to update.', { status: 400 });
+    }
 
     const setClauses = fieldsToUpdate.map(([key]) => `${key} = ?`).join(', ');
     const bindings = fieldsToUpdate.map(([, value]) => value);
     bindings.push(params.id);
+
+    const stmt = `UPDATE base_websites SET ${setClauses} WHERE id = ?`;
     
-    await env.DB.prepare(`UPDATE base_websites SET ${setClauses} WHERE id = ?`).bind(...bindings).run();
+    await env.DB.prepare(stmt).bind(...bindings).run();
+
     const { results } = await env.DB.prepare("SELECT * FROM base_websites WHERE id = ?").bind(params.id).all();
     return new Response(JSON.stringify(results[0]), { status: 200, headers: { 'Content-Type': 'application/json' } });
   } catch (error: any) {

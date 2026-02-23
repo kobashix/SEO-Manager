@@ -1,10 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircle } from 'lucide-react';
+import { Link as RouterLink } from 'react-router-dom';
+import { CheckCircle, AlertTriangle, Plus, Trash2, Edit, Eye, Zap, Twitter, Facebook, Linkedin, Instagram, Youtube } from 'lucide-react';
+import type { BaseWebsite } from '../types';
+import { useNotification } from '../contexts/NotificationContext';
 
 interface DashboardStats {
   totalWebsites: number;
+  isGoogleConfigured: boolean;
+  isIndexNowConfigured: boolean;
 }
 
+// --- Main Dashboard Page Component ---
 export const Dashboard: React.FC = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null);
 
@@ -22,6 +28,19 @@ export const Dashboard: React.FC = () => {
     fetchStats();
   }, []);
   
+  const renderStatus = (isConfigured: boolean | undefined) => {
+    if (isConfigured === undefined) return <span style={{color: 'var(--text-secondary)'}}>Loading...</span>;
+    return isConfigured ? (
+      <span style={{ color: 'var(--success)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+        <CheckCircle size={14} /> Configured
+      </span>
+    ) : (
+      <span style={{ color: 'var(--warning)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+        <AlertTriangle size={14} /> <RouterLink to="/settings" style={{color: 'var(--warning)'}}>Setup Required</RouterLink>
+      </span>
+    );
+  };
+
   return (
     <div>
       <h1 style={{ marginBottom: '2rem' }}>System Overview</h1>
@@ -37,41 +56,21 @@ export const Dashboard: React.FC = () => {
         
         <div className="stat-card">
           <div className="stat-label">Live Google Checks</div>
-          <div className="stat-value">OK</div>
-           <div style={{ color: 'var(--success)', marginTop: '0.5rem', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-            <CheckCircle size={14} /> API Connected
+          <div className="stat-value" style={{fontSize: '1.25rem'}}>
+            {renderStatus(stats?.isGoogleConfigured)}
+          </div>
+           <div style={{ color: 'var(--text-secondary)', marginTop: '0.5rem', fontSize: '0.875rem' }}>
+            Requires API keys
           </div>
         </div>
 
         <div className="stat-card">
           <div className="stat-label">IndexNow Status</div>
-          <div className="stat-value">OK</div>
-          <div style={{ color: 'var(--success)', marginTop: '0.5rem', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-            <CheckCircle size={14} /> API Connected
+          <div className="stat-value" style={{fontSize: '1.25rem'}}>
+            {renderStatus(stats?.isIndexNowConfigured)}
           </div>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-label">System Health</div>
-          <div className="stat-value">Nominal</div>
-          <div style={{ color: 'var(--success)', marginTop: '0.5rem', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-             All Systems Go
-          </div>
-        </div>
-      </div>
-
-      <div className="table-container" style={{ padding: '2rem' }}>
-        <h2>System Status</h2>
-        <p style={{ color: 'var(--text-secondary)' }}>All systems operational. This dashboard is connected to your D1 Database and Cloudflare KV store.</p>
-        <div style={{ marginTop: '1rem', display: 'flex', gap: '1rem' }}>
-          <div className="status-badge status-active">
-            API: Online
-          </div>
-          <div className="status-badge status-active">
-            IndexNow: Connected
-          </div>
-          <div className="status-badge status-active">
-            Database: Connected
+          <div style={{ color: 'var(--text-secondary)', marginTop: '0.5rem', fontSize: '0.875rem' }}>
+            Requires key file on sites
           </div>
         </div>
       </div>

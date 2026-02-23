@@ -9,6 +9,9 @@ export interface BaseWebsite {
   linkedin_url?: string;
   instagram_url?: string;
   youtube_url?: string;
+  gsc_url?: string;
+  bing_url?: string;
+  yandex_url?: string;
 }
 
 export interface SeoStatus {

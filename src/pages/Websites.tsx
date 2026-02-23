@@ -1,8 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { Plus, Trash2, Edit, Eye, Zap, Twitter, Facebook, Linkedin, Instagram, Youtube } from 'lucide-react';
 import type { BaseWebsite } from '../types';
 import { useNotification } from '../contexts/NotificationContext';
+
+// --- Social Links Display Component ---
+const SocialLinks = ({ website }: { website: BaseWebsite }) => {
+    const socials = [
+        { key: 'twitter_url', Icon: Twitter, color: '#1DA1F2' },
+        { key: 'facebook_url', Icon: Facebook, color: '#1877F2' },
+        { key: 'linkedin_url', Icon: Linkedin, color: '#0A66C2' },
+        { key: 'instagram_url', Icon: Instagram, color: '#E4405F' },
+        { key: 'youtube_url', Icon: Youtube, color: '#FF0000' },
+    ];
+
+    return (
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            {socials.map(({ key, Icon, color }) => {
+                const url = website[key as keyof BaseWebsite];
+                if (url) {
+                    return <a href={url as string} key={key} target="_blank" rel="noopener noreferrer" title={url as string}><Icon size={16} color={color} /></a>;
+                }
+                return null;
+            })}
+        </div>
+    );
+};
 
 // --- Reusable Modal Component ---
 const WebsiteFormModal = ({ website, onClose, onSave }: { website: Partial<BaseWebsite> | null, onClose: () => void, onSave: (w: Partial<BaseWebsite>) => void }) => {

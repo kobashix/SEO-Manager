@@ -68,7 +68,7 @@ export const onRequestPut: PagesFunction<Env, 'id'> = async ({ request, env, par
 
   // ROUTE B: Standard Update Action
   try {
-    const fieldsToUpdate = Object.entries(body).filter(([key]) => key !== 'id' && key !== 'created_at');
+    const fieldsToUpdate = Object.entries(body).filter(([key]) => key !== 'id' && key !== 'created_at' && key !== 'action');
     if (fieldsToUpdate.length === 0) return new Response('Nothing to update.', { status: 400 });
     const setClauses = fieldsToUpdate.map(([key]) => `${key} = ?`).join(', ');
     const bindings = fieldsToUpdate.map(([, value]) => value ?? null);

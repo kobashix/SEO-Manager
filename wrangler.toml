@@ -12,3 +12,6 @@ id = "4b3df82583044fb1bd06f26b54442403"
 binding = "DB"
 database_name = "seo_manager_db"
 database_id = "0cbeab0d-3ae7-4b1b-b734-7b7c87282e63"
+
+[browser]
+binding = "BROWSER"

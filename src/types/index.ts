@@ -4,6 +4,10 @@ export interface BaseWebsite {
   name: string;
   status: 'active' | 'inactive' | 'error';
   created_at: string;
+  is_wordpress?: boolean;
+  screenshot_url?: string;
+  meta_title?: string;
+  meta_description?: string;
   twitter_url?: string;
   facebook_url?: string;
   linkedin_url?: string;
@@ -25,3 +29,4 @@ export interface AppSettings {
   googleApiKey?: string;
   googleCxId?: string;
 }
+

@@ -1,7 +1,5 @@
 name = "seo-manager"
-compatibility_date = "2024-02-22"
-
-# This is the directory of static assets to be served
+compatibility_date = "2024-02-23"
 pages_build_output_dir = "dist"
 
 [[kv_namespaces]]

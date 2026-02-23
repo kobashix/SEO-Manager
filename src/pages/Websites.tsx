@@ -177,14 +177,15 @@ export const Websites: React.FC = () => {
     const handleGoogleCheck = async (website: BaseWebsite) => {
         setActionMessage(website.id, 'loading');
         try {
-            const response = await fetch(`/api/check-indexing?domain=${website.url}`);
-            const result = await response.json();
+            const response = await fetch(`/api/scrape-google?domain=${website.url}`);
             if (!response.ok) {
-                throw result; // Throw the structured error from the backend
+                const errorText = await response.text();
+                throw new Error(errorText || 'Scrape failed');
             }
+            const result = await response.json();
             setActionMessage(website.id, 'success', `${result.indexedCount} indexed`);
         } catch (err: any) {
-            addNotification(err.message, 'error', err.fixUrl ? { href: err.fixUrl, text: 'Enable API' } : undefined);
+            addNotification(err.message, 'error');
             setActionStatus(prev => { const newState = {...prev}; delete newState[website.id]; return newState; });
         }
     };

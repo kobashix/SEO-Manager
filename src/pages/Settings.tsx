@@ -64,55 +64,14 @@ export const Settings: React.FC = () => {
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <div>
-              <label htmlFor="googleApiKey" style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>
-                Google Custom Search API Key
-              </label>
-              <input
-                id="googleApiKey"
-                name="googleApiKey"
-                type="password"
-                placeholder="Enter Google API Key..."
-                value={settings.googleApiKey || ''}
-                onChange={handleInputChange}
-                style={{ width: '100%', padding: '0.75rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}
-              />
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginTop: '0.5rem' }}>
-                Required to check indexing status on Google. 
-                <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-primary)', marginLeft: '4px' }}>
-                  Get your API Key here.
-                </a>
-              </p>
-            </div>
-            <div>
-              <label htmlFor="googleCxId" style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>
-                Google Programmable Search Engine ID (CX)
-              </label>
-              <input
-                id="googleCxId"
-                name="googleCxId"
-                type="text"
-                placeholder="Enter Search Engine ID..."
-                value={settings.googleCxId || ''}
-                onChange={handleInputChange}
-                style={{ width: '100%', padding: '0.75rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}
-              />
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginTop: '0.5rem' }}>
-                This tells Google which search engine to use. 
-                <a href="https://programmablesearchengine.google.com/controlpanel/all" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-primary)', marginLeft: '4px' }}>
-                  Create a Search Engine here.
-                </a>
-                <span style={{ display: 'block', marginTop: '4px' }}>Important: In the setup, ensure "Search the entire web" is enabled.</span>
-              </p>
-            </div>
+            {/* Future settings for other APIs like Bing/Yandex can go here */}
+            <p>No API keys are currently required for this configuration.</p>
           </div>
 
           <div style={{ marginTop: '2rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-             <button className="btn btn-primary" onClick={handleSave} disabled={status === 'loading'}>
-                {status === 'loading' ? 'Saving...' : 'Save Changes'}
+             <button className="btn btn-primary" disabled>
+                Save Changes
              </button>
-             {status === 'success' && <span style={{ color: 'var(--success)' }}>{feedbackMessage}</span>}
-             {status === 'error' && <span style={{ color: 'var(--error)' }}>{feedbackMessage}</span>}
           </div>
         </div>
       </div>

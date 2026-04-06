@@ -30,6 +30,9 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error: any) {
-    return new Response(`Failed to retrieve stats: ${error.message}`, { status: 500 });
+    return new Response(JSON.stringify({ error: `Failed to retrieve stats: ${error.message}` }), { 
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    });
   }
 };

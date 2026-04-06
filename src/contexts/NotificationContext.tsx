@@ -5,12 +5,12 @@ import { X } from 'lucide-react';
 interface Notification {
   id: number;
   message: string;
-  type: 'success' | 'error';
+  type: 'success' | 'error' | 'warning';
   link?: { href: string; text: string; };
 }
 
 interface NotificationContextType {
-  addNotification: (message: string, type: 'success' | 'error', link?: Notification['link']) => void;
+  addNotification: (message: string, type: 'success' | 'error' | 'warning', link?: Notification['link']) => void;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -26,7 +26,7 @@ export const useNotification = () => {
 export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  const addNotification = (message: string, type: 'success' | 'error', link?: Notification['link']) => {
+  const addNotification = (message: string, type: 'success' | 'error' | 'warning', link?: Notification['link']) => {
     const id = Date.now();
     setNotifications(prev => [...prev, { id, message, type, link }]);
     setTimeout(() => {
@@ -38,12 +38,21 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
+  const getStyle = (type: 'success' | 'error' | 'warning') => {
+    switch (type) {
+      case 'error': return styles.error;
+      case 'warning': return styles.warning;
+      case 'success': return styles.success;
+      default: return styles.success;
+    }
+  };
+
   return (
     <NotificationContext.Provider value={{ addNotification }}>
       {children}
       <div style={styles.container}>
         {notifications.map(n => (
-          <div key={n.id} style={{ ...styles.toast, ...(n.type === 'error' ? styles.error : styles.success) }}>
+          <div key={n.id} style={{ ...styles.toast, ...getStyle(n.type) }}>
             <div>
               {n.message}
               {n.link && (
@@ -65,6 +74,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     toast: { padding: '1rem', borderRadius: '8px', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center', minWidth: '300px', maxWidth: '400px' },
     success: { backgroundColor: 'var(--bg-card)', border: '1px solid var(--success)' },
     error: { backgroundColor: 'var(--bg-card)', border: '1px solid var(--error)' },
+    warning: { backgroundColor: 'var(--bg-card)', border: '1px solid var(--warning)' },
     link: { color: 'var(--accent-primary)', textDecoration: 'underline', marginLeft: '8px' },
     closeButton: { background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', marginLeft: '1rem' }
 };

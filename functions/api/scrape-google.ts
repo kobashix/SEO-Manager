@@ -15,7 +15,10 @@ export const onRequestGet: PagesFunction<Env> = async ({ request }) => {
     const domain = searchParams.get('domain');
 
     if (!domain) {
-      return new Response('Domain parameter is required.', { status: 400 });
+      return new Response(JSON.stringify({ error: 'Domain parameter is required.' }), { 
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
     }
 
     const googleSearchUrl = `https://www.google.com/search?q=site:${domain}&hl=en`;
@@ -28,7 +31,10 @@ export const onRequestGet: PagesFunction<Env> = async ({ request }) => {
     });
 
     if (!googleResponse.ok) {
-      return new Response(`Google responded with status: ${googleResponse.status}`, { status: 500 });
+      return new Response(JSON.stringify({ error: `Google responded with status: ${googleResponse.status}` }), { 
+        status: 500,
+        headers: { "Content-Type": "application/json" }
+      });
     }
 
     const html = await googleResponse.text();
@@ -37,7 +43,10 @@ export const onRequestGet: PagesFunction<Env> = async ({ request }) => {
 
     if (!match || !match[1]) {
       // This can happen if Google shows a CAPTCHA or changes their layout.
-      return new Response('Could not parse result count. Google may have blocked the request or changed its page layout.', { status: 503 });
+      return new Response(JSON.stringify({ error: 'Could not parse result count. Google may have blocked the request or changed its page layout.' }), { 
+        status: 503,
+        headers: { "Content-Type": "application/json" }
+      });
     }
     
     const totalResults = parseInt(match[1].replace(/,/g, ''), 10);
@@ -47,8 +56,11 @@ export const onRequestGet: PagesFunction<Env> = async ({ request }) => {
       headers: { "Content-Type": "application/json" },
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in scrape-google function:', error);
-    return new Response('An internal server error occurred while scraping.', { status: 500 });
+    return new Response(JSON.stringify({ error: error.message || 'An internal server error occurred while scraping.' }), { 
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    });
   }
 };

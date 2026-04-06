@@ -117,11 +117,20 @@ export const Websites: React.FC = () => {
     
     const handleSaveWebsite = async (websiteData: Partial<BaseWebsite>) => {
         const isUpdating = !!websiteData.id;
+        const defaults = isUpdating ? {} : {
+            twitter_url: "https://twitter.com/teqh",
+            facebook_url: "https://facebook.com/teqh",
+            linkedin_url: "https://linkedin.com/company/teqh",
+            instagram_url: "https://instagram.com/teqh",
+            youtube_url: "https://youtube.com/@teqh",
+        };
+        const finalData = { ...defaults, ...websiteData };
+
         try {
             const response = await fetch(isUpdating ? `${API_URL_BASE}/${websiteData.id}` : API_URL_BASE, {
                 method: isUpdating ? 'PUT' : 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(websiteData),
+                body: JSON.stringify(finalData),
             });
             if (!response.ok) throw new Error(await response.text() || 'Failed to save website.');
             await fetchWebsites(); setEditingWebsite(null);
@@ -143,11 +152,20 @@ export const Websites: React.FC = () => {
         setActionMessage(website.id, 'loading');
         try {
             const response = await fetch(`/api/scrape-google?domain=${website.url}`);
-            const result = await response.json();
-            if (!response.ok) throw result;
+            
+            let result;
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+                result = await response.json();
+            } else {
+                result = { error: await response.text() || 'An unknown error occurred' };
+            }
+
+            if (!response.ok) throw new Error(result.error || `HTTP error! status: ${response.status}`);
+            
             setActionMessage(website.id, 'success', `${result.indexedCount} indexed`);
         } catch (err: any) {
-            addNotification(err.message, 'error', err.fixUrl ? { href: err.fixUrl, text: 'Enable API' } : undefined);
+            addNotification(err.message, 'error');
             setActionStatus(prev => { const newState = {...prev}; delete newState[website.id]; return newState; });
         }
     };
@@ -155,15 +173,30 @@ export const Websites: React.FC = () => {
     const handleBatchIndexNowPush = async () => {
         const selectedUrls = websites.filter(w => selected.has(w.id)).map(w => w.url);
         if (selectedUrls.length === 0) { addNotification("Please select at least one website.", 'error'); return; }
+        
         try {
             const response = await fetch('/index-now', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ urlList: selectedUrls }),
             });
-            if (!response.ok) throw new Error(await response.text() || 'Batch push failed');
-            addNotification((await response.json()).message || 'Batch submission successful!', 'success');
+            
+            const result = await response.json();
+            
+            if (!response.ok && !result.partialFailure) {
+                throw new Error(result.error || 'Batch push failed');
+            }
+            
+            if (result.partialFailure) {
+                addNotification(`Partial success: ${result.message}`, 'warning');
+            } else {
+                addNotification(result.message || 'Batch submission successful!', 'success');
+            }
+            
             setSelected(new Set());
-        } catch (err: any) { addNotification(err.message, 'error', { href: '/settings', text: 'Check Settings' }); }
+        } catch (err: any) { 
+            addNotification(err.message, 'error', { href: '/settings', text: 'Check Settings' }); 
+        }
     };
 
     const handleSelect = (websiteId: string) => {

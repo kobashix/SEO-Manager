@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { CheckCircle, AlertTriangle, Plus, Trash2, Edit, Eye, Zap, Twitter, Facebook, Linkedin, Instagram, Youtube } from 'lucide-react';
-import type { BaseWebsite } from '../types';
-import { useNotification } from '../contexts/NotificationContext';
+import { CheckCircle, AlertTriangle } from 'lucide-react';
 
 interface DashboardStats {
   totalWebsites: number;

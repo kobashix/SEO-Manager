@@ -3,7 +3,7 @@
 import type { AppSettings } from '../../src/types';
 
 interface Env {
-  SETTINGS_KV: KVNamespace;
+  KV: KVNamespace;
 }
 
 const SETTINGS_KEY = "APP_SETTINGS";
@@ -20,9 +20,12 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Failed to get settings:", error);
-    return new Response("Failed to retrieve settings.", { status: 500 });
+    return new Response(JSON.stringify({ error: `Failed to retrieve settings: ${error.message}` }), { 
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    });
   }
 };
 
@@ -35,7 +38,10 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
     // Basic validation
     if (typeof newSettings.googleApiKey !== 'string' || typeof newSettings.googleCxId !== 'string') {
-      return new Response("Invalid settings payload.", { status: 400 });
+      return new Response(JSON.stringify({ error: "Invalid settings payload." }), { 
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
     }
 
     await env.KV.put(SETTINGS_KEY, JSON.stringify(newSettings));
@@ -44,8 +50,11 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Failed to save settings:", error);
-    return new Response("Failed to save settings.", { status: 500 });
+    return new Response(JSON.stringify({ error: `Failed to save settings: ${error.message}` }), { 
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    });
   }
 };

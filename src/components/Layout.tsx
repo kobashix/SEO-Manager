@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { LayoutDashboard, Globe, Settings, Activity } from 'lucide-react';
+import { LayoutDashboard, Globe, Settings, Activity, Twitter, Facebook, Linkedin, Instagram, Youtube } from 'lucide-react';
 
 export const Layout: React.FC = () => {
   return (
@@ -10,7 +10,7 @@ export const Layout: React.FC = () => {
           <Activity size={24} />
           <span>TEQH Nexus</span>
         </div>
-        <nav className="sidebar-nav">
+        <nav className="sidebar-nav" style={{ flex: 1 }}>
           <NavLink
             to="/"
             className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
@@ -37,6 +37,19 @@ export const Layout: React.FC = () => {
             <span>Settings</span>
           </NavLink>
         </nav>
+
+        <div className="sidebar-footer" style={{ marginTop: 'auto', padding: '1rem 0', borderTop: '1px solid var(--border-color)' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+            <a href="https://twitter.com/teqh" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-secondary)' }} title="Twitter"><Twitter size={18} /></a>
+            <a href="https://facebook.com/teqh" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-secondary)' }} title="Facebook"><Facebook size={18} /></a>
+            <a href="https://linkedin.com/company/teqh" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-secondary)' }} title="LinkedIn"><Linkedin size={18} /></a>
+            <a href="https://instagram.com/teqh" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-secondary)' }} title="Instagram"><Instagram size={18} /></a>
+            <a href="https://youtube.com/@teqh" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-secondary)' }} title="YouTube"><Youtube size={18} /></a>
+          </div>
+          <div style={{ textAlign: 'center', fontSize: '0.7rem', color: 'var(--text-secondary)', marginTop: '0.75rem' }}>
+            © 2026 TEQH SEO Nexus
+          </div>
+        </div>
       </aside>
       <main className="main-content">
         <Outlet />
